@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import { Bookmark, ChevronLeft } from "lucide-react";
 import { CHAT_FAVORITES_UPDATED, groupChatFavorites, loadChatFavorites, removeChatFavorite, type ChatFavorite } from "@/lib/chat-favorites";
-import { loadChatSessions } from "@/lib/chat-storage";
+import { loadChatContacts, loadChatSessions } from "@/lib/chat-storage";
+import { loadCharacters } from "@/lib/character-storage";
 import { FavoriteContent, favoritePreview } from "./favorite-content";
 
 export function ChatFavoritesApp({ onBack }: { onBack: () => void }) {
@@ -16,13 +17,22 @@ export function ChatFavoritesApp({ onBack }: { onBack: () => void }) {
     return () => window.removeEventListener(CHAT_FAVORITES_UPDATED, refresh);
   }, []);
   const sessions = loadChatSessions();
+  const characters = loadCharacters();
+  const contacts = loadChatContacts();
+  const bookCharacter = (book: { id: string; items: ChatFavorite[] }) => {
+    const session = sessions.find(s => s.id === book.items[0]?.sessionId);
+    if (session?.isGroup || book.id.startsWith("group:")) return undefined;
+    const contactId = session?.contactId || (book.id.startsWith("character:") ? book.id.slice(10) : "");
+    const characterId = contacts.find(c => c.id === contactId)?.characterId || contactId;
+    return characters.find(c => c.id === characterId);
+  };
   const folders = groupChatFavorites(items, id => {
     const session = sessions.find(s => s.id === id);
     return session ? session.isGroup ? `group:${session.id}` : `character:${session.contactId}` : undefined;
   });
   const folder = folders.find(f => f.id === folderId);
   const back = () => { setError(""); if (selected) setSelected(null); else if (folderId) setFolderId(null); else onBack(); };
-  return <section className="diary-app">
+  return <section className="diary-app chat-favorites-app">
     <header className="diary-app-header"><button className="diary-icon-btn" onClick={back} aria-label="返回"><ChevronLeft size={20} /></button><div><h1>{selected ? "收藏详情" : folder ? folder.title : "收藏"}</h1><p>{selected ? `${selected.messages.length} 条消息 · ${selected.mode === "offline" ? "线下" : "线上"}` : folder ? `共 ${folder.items.length} 条收藏` : "先选角色，再翻阅收藏"}</p></div><span className="diary-header-spacer" /></header>
     <main className="diary-entry-main">
       {error && <p role="alert">{error}</p>}
@@ -40,7 +50,7 @@ export function ChatFavoritesApp({ onBack }: { onBack: () => void }) {
       </div> : <>
         {!folders.length && <p className="diary-entry-empty-line">还没有收藏。在聊天气泡菜单中选择“收藏”，也可以多选后合并收藏。</p>}
         <div className="diary-shelf">{[0, 1].map(column => <div className="diary-shelf-column" key={column}>{folders.filter((_, i) => i % 2 === column).map((book, i) => <button key={book.id} type="button" className="diary-book" data-cover={i % 6} onClick={() => { setError(""); setFolderId(book.id); }}>
-          <span className="diary-book-spine" aria-hidden="true" /><span className="diary-book-frame" aria-hidden="true" /><span className="diary-book-label"><span className="diary-book-avatar"><Bookmark size={20} /></span><strong>{book.title}</strong><em>的收藏夹</em></span><span className="diary-book-meta"><span>{book.items.length} 条收藏</span></span>
+          <span className="diary-book-spine" aria-hidden="true" /><span className="diary-book-frame" aria-hidden="true" /><span className="diary-book-label"><span className="diary-book-avatar">{bookCharacter(book)?.avatar ? <img src={bookCharacter(book)!.avatar!} alt="" /> : <Bookmark size={20} />}</span><strong>{bookCharacter(book)?.name || book.title}</strong><em>的收藏夹</em></span><span className="diary-book-meta"><span>{book.items.length} 条收藏</span></span>
         </button>)}</div>)}</div>
       </>}
     </main>

@@ -18,5 +18,5 @@ export function FavoriteContent({ text, mode }: { text: string; mode: "online" |
       ALLOWED_ATTR: ["href", "title"],
     }));
   }, [text]);
-  return <div className="chat-markdown chat-favorite-content" style={{ overflowWrap: "anywhere", fontSize: `calc(${mode === "offline" ? 14.5 : 14}px * var(--app-text-scale, 1))`, lineHeight: mode === "offline" ? 1.85 : 1.6, margin: "10px 0" }}><ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw]}>{safe}</ReactMarkdown></div>;
+  return <div className="chat-markdown chat-favorite-content" style={{ overflowWrap: "anywhere", fontSize: "14px", lineHeight: 1.7, margin: "10px 0" }}><ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeRaw]}>{safe}</ReactMarkdown></div>;
 }

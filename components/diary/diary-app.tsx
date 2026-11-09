@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { formatDiaryCardDate } from "@/lib/diary-card-date";
 import { BookOpenText, ChevronLeft, StickyNote } from "lucide-react";
 
 import { DiaryEntriesApp } from "./diary-entries-app";
@@ -18,10 +19,20 @@ const NOTE_WALL_UI_ENABLED = false;
 
 export function DiaryApp({ onClose, onNotice }: DiaryAppProps) {
   const [view, setView] = useState<DiaryView>("home");
-  const todayLabel = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-  }).format(new Date()).toUpperCase();
+  const [todayLabel, setTodayLabel] = useState(() => formatDiaryCardDate());
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = () => {
+      clearTimeout(timer);
+      setTodayLabel(formatDiaryCardDate());
+      const now = new Date();
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      timer = setTimeout(refresh, midnight.getTime() - now.getTime() + 100);
+    };
+    const visible = () => { if (document.visibilityState === "visible") refresh(); };
+    refresh(); window.addEventListener("focus", refresh); document.addEventListener("visibilitychange", visible);
+    return () => { clearTimeout(timer); window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", visible); };
+  }, []);
 
   if (NOTE_WALL_UI_ENABLED && view === "notewall") {
     return <NoteWallApp onBack={() => setView("home")} onNotice={onNotice} />;

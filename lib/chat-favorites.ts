@@ -6,7 +6,18 @@ export const CHAT_FAVORITES_KEY = "ai_phone_chat_favorites_v1";
 export const CHAT_FAVORITES_UPDATED = "chat-favorites-updated";
 registerKvMigration(CHAT_FAVORITES_KEY);
 export type FavoriteMessage = Pick<ChatMessage, "id" | "role" | "content" | "createdAt" | "mediaType" | "mediaData" | "mediaUrl"> & { senderName: string };
-export type ChatFavorite = { id: string; createdAt: string; sessionId: string; title: string; mode: "online" | "offline"; messages: FavoriteMessage[] };
+export type ChatFavorite = { id: string; createdAt: string; sessionId: string; folderId?: string; title: string; mode: "online" | "offline"; messages: FavoriteMessage[] };
+
+export function groupChatFavorites(items: ChatFavorite[], legacyFolder: (sessionId: string) => string | undefined) {
+  const groups = new Map<string, { id: string; title: string; items: ChatFavorite[] }>();
+  for (const item of items) {
+    const id = item.folderId || legacyFolder(item.sessionId) || `session:${item.sessionId}`;
+    let group = groups.get(id);
+    if (!group) { group = { id, title: item.title, items: [] }; groups.set(id, group); }
+    group.items.push(item);
+  }
+  return [...groups.values()];
+}
 
 export function loadChatFavorites(): ChatFavorite[] {
   try {

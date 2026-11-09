@@ -4586,7 +4586,7 @@ export function ChatRoom({ session, onBack, onDeleted }: ChatRoomProps) {
     const offlineFavoriteSnapshot = (turn: ChatOfflineTurn, role: OfflineActionTarget["role"]): FavoriteMessage => ({ id: `${turn.id}:${role}`, role, content: role === "user" ? getOfflineDisplayText(turn).userContent : getOfflineDisplayText(turn).assistantContent, createdAt: turn.createdAt, senderName: role === "user" ? (userIdentity?.name || "你") : (session.isGroup ? session.groupName || "群聊" : character?.name || "对方") });
     const saveFavorite = async (messages: FavoriteMessage[], mode: "online" | "offline") => {
         try {
-            await addChatFavorite({ sessionId: session.id, title: session.groupName || character?.name || "聊天收藏", mode, messages });
+            await addChatFavorite({ sessionId: session.id, folderId: session.isGroup ? `group:${session.id}` : `character:${session.contactId}`, title: session.groupName || character?.name || "聊天收藏", mode, messages });
             showChatToast("已收藏到手记");
             setActiveMessageId(null); setActiveOfflineTarget(null);
             setOfflineFavoriteSelection(null); setIsMultiSelectMode(false); setSelectedMessageIds(new Set());
@@ -4611,9 +4611,9 @@ export function ChatRoom({ session, onBack, onDeleted }: ChatRoomProps) {
                     <button onClick={() => void handleOfflineRetryFrom(turn.id)} className="ctx-menu-btn ctx-menu-btn-danger">重试以下</button>
                 </div>
                 <div className="flex">
-                    <button onClick={() => handleOfflineDeleteTurn(turn.id)} className="ctx-menu-btn ctx-menu-btn-danger">删除</button>
                     <button onClick={() => void saveFavorite([offlineFavoriteSnapshot(turn, role)], "offline")} className="ctx-menu-btn">收藏</button>
                     <button onClick={() => { setOfflineFavoriteSelection(new Set([`${turn.id}:${role}`])); setActiveOfflineTarget(null); }} className="ctx-menu-btn">多选</button>
+                    <button onClick={() => handleOfflineDeleteTurn(turn.id)} className="ctx-menu-btn ctx-menu-btn-danger">删除</button>
                     <button onClick={() => handleOfflineDeleteTurnsFrom(turn.id)} className="ctx-menu-btn ctx-menu-btn-danger">删除以下</button>
                 </div>
                 <div data-menu-triangle className="ctx-menu-triangle absolute -top-[6px] w-0 h-0" />

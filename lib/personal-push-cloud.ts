@@ -74,6 +74,7 @@ export function isPersonalPushCloudActive(): boolean {
   const backup = loadCloudBackupConfig();
   return Boolean(
     state
+    && backup.authMode !== "email"
     && isCloudBackupConfigured(backup)
     && state.projectRef === projectRefFromUrl(backup.url)
     && state.url === normalizeBackupUrl(backup.url),

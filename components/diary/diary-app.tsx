@@ -5,13 +5,14 @@ import { BookOpenText, ChevronLeft, StickyNote } from "lucide-react";
 
 import { DiaryEntriesApp } from "./diary-entries-app";
 import { NoteWallApp } from "./note-wall-app";
+import { ChatFavoritesApp } from "./chat-favorites-app";
 
 type DiaryAppProps = {
   onClose: () => void;
   onNotice?: (message: string) => void;
 };
 
-type DiaryView = "home" | "entries" | "notewall";
+type DiaryView = "home" | "entries" | "notewall" | "favorites";
 
 const NOTE_WALL_UI_ENABLED = false;
 
@@ -29,6 +30,7 @@ export function DiaryApp({ onClose, onNotice }: DiaryAppProps) {
   if (view === "entries") {
     return <DiaryEntriesApp onBack={() => setView("home")} onNotice={onNotice} />;
   }
+  if (view === "favorites") return <ChatFavoritesApp onBack={() => setView("home")} />;
 
   return (
     <section className="diary-app">
@@ -66,6 +68,12 @@ export function DiaryApp({ onClose, onNotice }: DiaryAppProps) {
           </span>
         </button>
 
+        <button type="button" className="diary-feature-card diary-feature-card-entry" onClick={() => setView("favorites")}>
+          <span className="diary-feature-punches diary-feature-punches-left" aria-hidden="true" /><span className="diary-feature-punches diary-feature-punches-right" aria-hidden="true" />
+          <span className="diary-feature-card-head"><span className="diary-feature-label">FAVORITES</span><span className="diary-feature-number">{todayLabel}</span></span>
+          <span className="diary-feature-main"><span className="diary-feature-icon"><BookOpenText size={20} strokeWidth={1.55} /></span><span><strong>收藏</strong><em>珍藏的单条消息与整组对话</em></span></span>
+          <span className="diary-feature-bottom" aria-hidden="true"><span className="diary-feature-barcode" /><span className="diary-feature-weather">SAVED CONVERSATIONS</span></span>
+        </button>
         {NOTE_WALL_UI_ENABLED ? (
           <button type="button" className="diary-feature-card diary-feature-card-primary" onClick={() => setView("notewall")}>
             <span className="diary-feature-punches diary-feature-punches-left" aria-hidden="true" />

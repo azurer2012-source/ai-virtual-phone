@@ -5,6 +5,7 @@ import { CHAT_FAVORITES_UPDATED, groupChatFavorites, loadChatFavorites, removeCh
 import { loadChatContacts, loadChatSessions } from "@/lib/chat-storage";
 import { loadCharacters } from "@/lib/character-storage";
 import { FavoriteContent, favoritePreview } from "./favorite-content";
+import { FavoriteAudio } from "./favorite-audio";
 
 export function ChatFavoritesApp({ onBack }: { onBack: () => void }) {
   const [items, setItems] = useState<ChatFavorite[]>([]);
@@ -37,10 +38,10 @@ export function ChatFavoritesApp({ onBack }: { onBack: () => void }) {
     <main className="diary-entry-main">
       {error && <p role="alert">{error}</p>}
       {selected ? <div style={{ padding: 12 }}><h2>{selected.title}</h2>{selected.messages.map((message, i) => <article key={`${message.id}-${i}`} style={{ margin: "18px 0", padding: 16, borderRadius: 12, background: "var(--c-card, #fff)" }}>
-        <strong style={{ fontSize: "calc(12px * var(--app-text-scale, 1))" }}>{message.senderName}</strong><FavoriteContent mode={selected.mode} text={message.content || (message.mediaType ? `[${message.mediaType}]` : "（空消息）")} />
+        <strong style={{ fontSize: "calc(12px * var(--app-text-scale, 1))" }}>{message.senderName}</strong>{message.mediaType !== "audio" && <FavoriteContent mode={selected.mode} text={message.content || (message.mediaType ? `[${message.mediaType}]` : "（空消息）")} />}
         {message.mediaUrl && message.mediaType === "image" && <img src={message.mediaUrl} alt="收藏的图片" style={{ maxWidth: "100%", borderRadius: 8 }} />}
         {message.mediaType === "sticker" && message.mediaData?.stickerUrl && <img src={message.mediaData.stickerUrl} alt={message.mediaData.label || "表情"} style={{ maxWidth: 180 }} />}
-        {message.mediaUrl && message.mediaType === "audio" && <audio controls src={message.mediaUrl} />}
+        {message.mediaType === "audio" && <FavoriteAudio message={message} />}
         {message.mediaUrl && message.mediaType === "video" && <video controls src={message.mediaUrl} style={{ maxWidth: "100%" }} />}
         <small style={{ fontSize: "calc(11px * var(--app-text-scale, 1))", opacity: 0.65 }}>{new Date(message.createdAt).toLocaleString()}</small>
       </article>)}<button className="ui-btn" onClick={async () => { if (!window.confirm("取消这条收藏？原聊天不会删除。")) return; try { await removeChatFavorite(selected.id); setSelected(null); } catch { setError("取消收藏失败，请重试。"); } }}>取消收藏</button></div> : folder ? <div className="diary-entry-list">
